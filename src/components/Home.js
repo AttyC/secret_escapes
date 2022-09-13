@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
-import './App.css';
+import { useNavigate } from 'react-router-dom'
+import SearchResults from './SearchResults'
 
-function App() {
+const Home = () => {
 
-  const [data, setData] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('London')
+  const [searchResults, setSearchResults] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const fetchData =() =>  {   
-    console.log( 'getting the data ...')
+  const navigate = useNavigate();
+
+  const fetchData = () =>  {   
+    setLoading(true)
     fetch('https://staging.sparrow.escapes.tech/graphql/', {
       method: 'POST',
       headers: {
@@ -35,24 +39,29 @@ function App() {
       })
     })
     .then(res => res.json())
-    .then(res => console.log(res.data))
+    .then(res =>  setSearchResults(res.data.saleSearch))
+    setLoading(false)
   }
 
   const formHandler = (event) => {
     event.preventDefault()
     fetchData()
+    navigate(`/search?query=${searchTerm}`);
   }
 
   const handleInputChange = (event) => setSearchTerm(event.target.value)
-  console.log(searchTerm)
+
   return (
+    <>
     <form onSubmit={formHandler}>
       <label>
         Search:
         <input type="search" name="search" onChange={handleInputChange}/>
       </label>
     </form>
-  );
+        {searchResults &&  <SearchResults searchResults={searchResults} />}
+        </>
+  )
 }
 
-export default App;
+export default Home;
